@@ -7,9 +7,9 @@ import gensim
 
 
 cpu_count = 16
-num_runs = 1
-sample_size = 1
-window_in_nodes = 1
+num_runs = 3
+sample_size = 100
+window_in_nodes = 2
 
 # ogbg-molhiv, 41127 1 binary classification
 # ogbg-molpcba, 437929 128 binary classification
@@ -26,8 +26,8 @@ window_in_nodes = 1
 
 dataset_estimator_dict = {
     # (multi-task) binary classification
-    # "ogbg-molhiv": MultiOutputClassifier(svm.SVC()),
-    "ogbg-molpcba": MultiOutputClassifier(svm.SVC()),
+    "ogbg-molhiv": MultiOutputClassifier(svm.SVC()),
+    # "ogbg-molpcba": MultiOutputClassifier(svm.SVC()),
     # "ogbg-moltox21": MultiOutputClassifier(svm.SVC()),
     # "ogbg-molbace": MultiOutputClassifier(svm.SVC()),
     # "ogbg-molbbbp": MultiOutputClassifier(svm.SVC()),
@@ -49,8 +49,8 @@ if __name__ == "__main__":
         num_runs=num_runs,
         window_in_nodes=window_in_nodes,
         sample_size=sample_size,
-        vertex_feature_idx=[0],
-        edge_feature_idx=[0],
+        vertex_feature_idx=range(9),  # [0],
+        edge_feature_idx=range(3),  # [0],
     )
 
     for dataset_name, estimator in dataset_estimator_dict.items():
