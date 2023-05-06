@@ -3,14 +3,18 @@ from sklearn.multioutput import MultiOutputClassifier, MultiOutputRegressor
 
 from helpers.pipeline_evaluator import PipelineEvaluator
 
+import gensim
+
+print(f"are you using fast gensim?: {gensim.models.doc2vec.FAST_VERSION > -1}")
+
 cpu_count = 16
-num_runs = 1
-sample_size = 30
+num_runs = 3
+sample_size = 1000
 window_in_nodes = 3
 
 dataset_estimator_dict = {
     # (multi-task) binary classification
-    "ogbg-molhiv": MultiOutputClassifier(svm.SVC()),
+    # "ogbg-molhiv": MultiOutputClassifier(svm.SVC()),
     "ogbg-molpcba": MultiOutputClassifier(svm.SVC()),
     "ogbg-moltox21": MultiOutputClassifier(svm.SVC()),
     "ogbg-molbace": MultiOutputClassifier(svm.SVC()),
