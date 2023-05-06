@@ -63,23 +63,20 @@ class PipelineEvaluator:
             for name, idx_list in dataset.get_idx_split().items():
                 data[name] = dict()
                 data[name]["X"] = np.array([X[idx] for idx in idx_list])
-                data[name]["y"] = np.array(
-                    [dataset[idx][1] for idx in idx_list]
-                ).ravel()
+                y = np.array([dataset[idx][1] for idx in idx_list])
+                data[name]["y"] = y
 
             # fit
             estimator.fit(data["train"]["X"], data["train"]["y"])
-
             # predict
-            data["valid"]["y_predicted"] = estimator.predict(data["valid"]["X"])
-
+            prediction = estimator.predict(data["valid"]["X"])
+            data["valid"]["y_predicted"] = prediction
             # evaluate
             evaluator = Evaluator(name=dataset_name)
             input_dict = {
-                "y_true": data["valid"]["y"].reshape((-1, 1)),
-                "y_pred": data["valid"]["y_predicted"].reshape((-1, 1)),
+                "y_true": data["valid"]["y"],
+                "y_pred": data["valid"]["y_predicted"],
             }
-
             result_dicts.append(evaluator.eval(input_dict))
 
             # newline for space in log file

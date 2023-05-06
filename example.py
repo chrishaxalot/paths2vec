@@ -44,7 +44,9 @@ if __name__ == "__main__":
         for name, idx_list in dataset.get_idx_split().items():
             data[name] = dict()
             data[name]["X"] = np.array([X[idx] for idx in idx_list])
-            data[name]["y"] = np.array([dataset[idx][1] for idx in idx_list]).ravel()
+            data[name]["y"] = np.array(
+                [dataset[idx][1] for idx in idx_list]
+            )  # .ravel()
 
         # fit
         estimator.fit(data["train"]["X"], data["train"]["y"])
@@ -55,8 +57,8 @@ if __name__ == "__main__":
         # evaluate
         evaluator = Evaluator(name=dataset_name)
         input_dict = {
-            "y_true": data["valid"]["y"].reshape((-1, 1)),
-            "y_pred": data["valid"]["y_predicted"].reshape((-1, 1)),
+            "y_true": data["valid"]["y"],  # .reshape((-1, 1)),
+            "y_pred": data["valid"]["y_predicted"],  # .reshape((-1, 1))
         }
 
         result_dicts.append(evaluator.eval(input_dict))
