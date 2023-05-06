@@ -1,6 +1,6 @@
 import numpy as np
 from ogb.graphproppred import Evaluator, GraphPropPredDataset
-from sklearn.impute import IterativeImputer
+from sklearn.experimental import enable_iterative_imputer
 
 from helpers import GraphGenerator, ResultPrinter
 from paths2vec import Paths2Vec
