@@ -6,6 +6,7 @@ class ResultPrinter:
         pass
 
     def print(self, result_dicts):
+        result_str = ""
         result = dict()
 
         for key in result_dicts[0].keys():
@@ -14,7 +15,9 @@ class ResultPrinter:
                 result[key].append(result_dict[key])
 
         for key, list in result.items():
-            print(f"metric: {key}")
-            print(f"mean: {np.mean(list)}")
-            print(f"std: {np.std(list)}")
-            print(f"Full results: {list}")
+            result_str += f"metric: {key}\n"
+            result_str += f"mean: {np.mean(list)}\n"
+            result_str += f"std: {np.std(list)}\n"
+            result_str += f"Full results: {list}\n"
+
+        return result_str

@@ -18,8 +18,6 @@ class GraphGenerator:
             ):
                 graphs.append(graph)
 
-        print(max([len(graph.nodes) for graph in graphs]))
-
         return graphs
 
     def single_ogb_dict_to_graph(self, data):

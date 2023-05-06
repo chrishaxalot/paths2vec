@@ -87,6 +87,7 @@ class PipelineEvaluator:
     def evaluate(self, dataset_name, estimator):
         methods = {"path2vec": get_paths2vec_X, "random": get_random_X}
 
+        result_str = ""
         for methodname, method in methods.items():
             result_dicts = self.get_result_dicts(
                 method,
@@ -95,8 +96,13 @@ class PipelineEvaluator:
             )
 
             # print results
-            print(f"dataset: {dataset_name}")
-            print(f"method: {methodname}")
-            print(f"runs: {self.num_runs}")
+            result_str += f"dataset: {dataset_name}\n"
+            result_str += f"method: {methodname}\n"
+            result_str += f"runs: {self.num_runs}\n"
             result_printer = ResultPrinter()
-            result_printer.print(result_dicts=result_dicts)
+            result_str += result_printer.print(result_dicts=result_dicts)
+            result_str += "\n"
+
+        print(result_str)
+        with open("result.result", "a") as result_file:
+            result_file.write(result_str)
