@@ -1,12 +1,20 @@
-from ogb.graphproppred import Evaluator, GraphPropPredDataset
-from sklearn import svm
 import numpy as np
+from ogb.graphproppred import Evaluator, GraphPropPredDataset
+from sklearn.impute import IterativeImputer
 
-from paths2vec import Paths2Vec
 from helpers import GraphGenerator, ResultPrinter
+from paths2vec import Paths2Vec
 
 
-def get_paths2vec_X(dataset_name, dataset, cpu_count, sample_size, window_in_nodes):
+def get_paths2vec_X(
+    dataset_name,
+    dataset,
+    cpu_count,
+    sample_size,
+    window_in_nodes,
+    vertex_feature_idx,
+    edge_feature_idx,
+):
     # convert ogb dicts to networkx graphs
     dict_calculator = GraphGenerator()
     graphs = dict_calculator.ogb_dataset_to_graphs(dataset=dataset)
@@ -19,22 +27,42 @@ def get_paths2vec_X(dataset_name, dataset, cpu_count, sample_size, window_in_nod
         corpus_file=corpus_file,
         sample_size=sample_size,
         window_in_nodes=window_in_nodes,
+        vertex_feature_idx=vertex_feature_idx,
+        edge_feature_idx=edge_feature_idx,
     )
 
     return X
 
 
-def get_random_X(dataset_name, dataset, cpu_count, sample_size, window_in_nodes):
+def get_random_X(
+    dataset_name,
+    dataset,
+    cpu_count,
+    sample_size,
+    window_in_nodes,
+    vertex_feature_idx,
+    edge_feature_idx,
+):
     X = [np.random.normal(size=100) for _ in range(len(dataset))]
     return X
 
 
 class PipelineEvaluator:
-    def __init__(self, cpu_count, num_runs, window_in_nodes, sample_size):
+    def __init__(
+        self,
+        cpu_count,
+        num_runs,
+        window_in_nodes,
+        sample_size,
+        vertex_feature_idx,
+        edge_feature_idx,
+    ):
         self.cpu_count = cpu_count
         self.num_runs = num_runs
         self.window_in_nodes = window_in_nodes
         self.sample_size = sample_size
+        self.vertex_feature_idx = vertex_feature_idx
+        self.edge_feature_idx = edge_feature_idx
         pass
 
     def get_result_dicts(
@@ -56,6 +84,8 @@ class PipelineEvaluator:
                 self.cpu_count,
                 self.sample_size,
                 self.window_in_nodes,
+                self.vertex_feature_idx,
+                self.edge_feature_idx,
             )
 
             # split data
@@ -67,7 +97,9 @@ class PipelineEvaluator:
                 data[name]["y"] = y
 
             # fit
-            estimator.fit(data["train"]["X"], data["train"]["y"])
+            imp = IterativeImputer()
+            y = imp.fit_transform(data["train"]["y"])
+            estimator.fit(data["train"]["X"], y)
             # predict
             prediction = estimator.predict(data["valid"]["X"])
             data["valid"]["y_predicted"] = prediction

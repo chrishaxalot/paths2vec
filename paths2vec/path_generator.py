@@ -12,10 +12,9 @@ class PathGenerator:
         self.cpu_count = cpu_count
         self.sample_size = sample_size
 
-    def paths_to_file(self, graphs, len_vertex_feature, len_edge_feature):
-        self.len_vertex_feature = len_vertex_feature
-        self.len_edge_feature = len_edge_feature
-
+    def paths_to_file(self, graphs, vertex_feature_idx, edge_feature_idx):
+        self.vertex_feature_idx = vertex_feature_idx
+        self.edge_feature_idx = edge_feature_idx
         with open(self.corpus_file, "w") as f_paths:
             with Pool(self.cpu_count) as pool:
                 for paths in tqdm(
@@ -50,27 +49,21 @@ class PathGenerator:
             if i >= self.sample_size:
                 break
 
-        # for source, target in self.random_sample(product(graph.nodes, graph.nodes)):
-        #     if nx.has_path(graph, source, target):
-        #         path = nx.shortest_path(graph, source=source, target=target)
-        #         if len(path) >= 2:
-        #             paths.append(path)
-
         return paths
 
     def substitute(self, path, graph):
         path_str = []
         for node_index, node_id in enumerate(path):
             node = graph.nodes[node_id]
-            for i, feature in enumerate(node["feature"]):
+            for i, feature in enumerate(node["feature"][self.vertex_feature_idx]):
                 path_str.append(f"v{i}_{feature}")
-            path_str.append("EOW")
+            # path_str.append("EOW")
 
             if node_index != len(path) - 1:
                 edge = graph.edges[(path[node_index], path[node_index + 1])]
-                for i, feature in enumerate(edge["feature"]):
+                for i, feature in enumerate(edge["feature"][self.edge_feature_idx]):
                     path_str.append(f"e{i}_{feature}")
-                path_str.append("EOW")
+                # path_str.append("EOW")
 
         path_str = " ".join(path_str)
         return path_str
