@@ -6,10 +6,10 @@ from helpers.pipeline_evaluator import PipelineEvaluator
 import gensim
 
 
-cpu_count = 16
-num_runs = 1
-sample_size = 50
-window_in_nodes = 2
+cpu_count = 40
+num_runs = 3
+sample_size = 150
+window_in_nodes = 3
 
 # ogbg-molhiv, 41127 1 binary classification
 # ogbg-molpcba, 437929 128 binary classification
@@ -26,19 +26,21 @@ window_in_nodes = 2
 
 dataset_estimator_dict = {
     # (multi-task) binary classification
-    # "ogbg-molhiv": MultiOutputClassifier(svm.SVC()),
-    "ogbg-molpcba": MultiOutputClassifier(svm.SVC()),
-    # "ogbg-moltox21": MultiOutputClassifier(svm.SVC()),
-    # "ogbg-molbace": MultiOutputClassifier(svm.SVC()),
-    # "ogbg-molbbbp": MultiOutputClassifier(svm.SVC()),
-    # "ogbg-molclintox": MultiOutputClassifier(svm.SVC()),
-    # "ogbg-molmuv": MultiOutputClassifier(svm.SVC()),
-    # "ogbg-molsider": MultiOutputClassifier(svm.SVC()),
-    # "ogbg-moltoxcast": MultiOutputClassifier(svm.SVC()),
+    "ogbg-moltox21": MultiOutputClassifier(svm.SVC()),
+    "ogbg-molbace": MultiOutputClassifier(svm.SVC()),
+    "ogbg-molbbbp": MultiOutputClassifier(svm.SVC()),
+    "ogbg-molclintox": MultiOutputClassifier(svm.SVC()),
+    "ogbg-molsider": MultiOutputClassifier(svm.SVC()),
+    "ogbg-moltoxcast": MultiOutputClassifier(svm.SVC()),
     # # regression
-    # "ogbg-molesol": MultiOutputRegressor(svm.SVR()),
-    # "ogbg-molfreesolv": MultiOutputRegressor(svm.SVR()),
-    # "ogbg-mollipo": MultiOutputRegressor(svm.SVR()),
+    "ogbg-molesol": MultiOutputRegressor(svm.SVR()),
+    "ogbg-molfreesolv": MultiOutputRegressor(svm.SVR()),
+    "ogbg-mollipo": MultiOutputRegressor(svm.SVR()),
+    #
+    # larger datasets
+    "ogbg-molhiv": MultiOutputClassifier(svm.SVC()),
+    "ogbg-molpcba": MultiOutputClassifier(svm.SVC()),
+    "ogbg-molmuv": MultiOutputClassifier(svm.SVC()),
 }
 
 if __name__ == "__main__":
@@ -49,11 +51,11 @@ if __name__ == "__main__":
         num_runs=num_runs,
         window_in_nodes=window_in_nodes,
         sample_size=sample_size,
-        vertex_feature_idx=range(9),  # [0],
-        edge_feature_idx=range(3),  # [0],
+        vertex_feature_idx=range(9),
+        edge_feature_idx=range(3),
     )
 
     for dataset_name, estimator in dataset_estimator_dict.items():
         pipeline_evaluator.evaluate(
-            dataset_name=dataset_name, estimator=estimator, max_elem=10000
+            dataset_name=dataset_name, estimator=estimator, max_elem=None
         )

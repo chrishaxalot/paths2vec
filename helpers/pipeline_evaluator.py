@@ -156,7 +156,7 @@ class PipelineEvaluator:
             result_str += "\n"
 
         print(result_str)
-        with open("result.result", "a") as result_file:
+        with open(f"result_{dataset_name}.result", "w") as result_file:
             result_file.write(result_str)
 
         return result_str
