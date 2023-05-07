@@ -6,6 +6,7 @@ from sklearn.impute import IterativeImputer
 from helpers import GraphGenerator, ResultPrinter
 from paths2vec import Paths2Vec
 import random
+import time
 
 
 def get_paths2vec_X(
@@ -91,9 +92,8 @@ class PipelineEvaluator:
 
             # convert ogb dicts to networkx graphs
             dict_calculator = GraphGenerator()
-            graphs = dict_calculator.ogb_dataset_to_graphs(dataset=dataset)
-
-            graphs = [graphs[i] for i in used_new_idx]
+            sub_dataset = [dataset[i] for i in used_new_idx]
+            graphs = dict_calculator.ogb_dataset_to_graphs(dataset=sub_dataset)
 
             X = X_func(
                 dataset_name,
@@ -140,14 +140,18 @@ class PipelineEvaluator:
 
         result_str = ""
         for methodname, method in methods.items():
+            start_time = time.time()
             result_dicts = self.get_result_dicts(
                 method, dataset_name, estimator, max_elem=max_elem
             )
+            end_time = time.time()
 
             # print results
             result_str += f"dataset: {dataset_name}\n"
             result_str += f"method: {methodname}\n"
             result_str += f"runs: {self.num_runs}\n"
+            result_str += f"s/run: {(end_time-start_time)/self.num_runs}\n"
+            result_str += f"max_elem: {max_elem}\n"
             result_printer = ResultPrinter()
             result_str += result_printer.print(result_dicts=result_dicts)
             result_str += "\n"
