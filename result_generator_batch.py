@@ -8,10 +8,11 @@ from helpers.pipeline_evaluator import PipelineEvaluator
 @click.command()
 @click.option("--dataset_name")
 @click.option("--task_type")
-@click.option("--num_runs")
-@click.option("--sample_size")
-@click.option("--window_in_nodes")
-def main(dataset_name, task_type, num_runs, sample_size, window_in_nodes):
+@click.option("--num_runs", type=int)
+@click.option("--sample_size", type=int)
+@click.option("--window_in_nodes", type=int)
+@click.option("--max_elem", default=None)
+def main(dataset_name, task_type, num_runs, sample_size, window_in_nodes, max_elem):
     if task_type == "classification":
         estimator = MultiOutputClassifier(svm.SVC())
     elif task_type == "regression":
@@ -27,9 +28,11 @@ def main(dataset_name, task_type, num_runs, sample_size, window_in_nodes):
     )
 
     pipeline_evaluator.evaluate(
-        dataset_name=dataset_name, estimator=estimator, max_elem=None
+        dataset_name=dataset_name, estimator=estimator, max_elem=max_elem
     )
 
 
 if __name__ == "__main__":
     main()
+
+# python .\result_generator_batch.py --dataset_name=ogbg-molfreesolv --task_type=regression --num_runs=1 --sample_size=1 --window_in_nodes=1
