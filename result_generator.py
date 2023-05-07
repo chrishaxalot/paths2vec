@@ -7,8 +7,8 @@ import gensim
 
 
 cpu_count = 16
-num_runs = 3
-sample_size = 100
+num_runs = 1
+sample_size = 50
 window_in_nodes = 2
 
 # ogbg-molhiv, 41127 1 binary classification
@@ -27,18 +27,18 @@ window_in_nodes = 2
 dataset_estimator_dict = {
     # (multi-task) binary classification
     "ogbg-molhiv": MultiOutputClassifier(svm.SVC()),
-    # "ogbg-molpcba": MultiOutputClassifier(svm.SVC()),
-    # "ogbg-moltox21": MultiOutputClassifier(svm.SVC()),
-    # "ogbg-molbace": MultiOutputClassifier(svm.SVC()),
-    # "ogbg-molbbbp": MultiOutputClassifier(svm.SVC()),
-    # "ogbg-molclintox": MultiOutputClassifier(svm.SVC()),
-    # "ogbg-molmuv": MultiOutputClassifier(svm.SVC()),
-    # "ogbg-molsider": MultiOutputClassifier(svm.SVC()),
-    # "ogbg-moltoxcast": MultiOutputClassifier(svm.SVC()),
+    "ogbg-molpcba": MultiOutputClassifier(svm.SVC()),
+    "ogbg-moltox21": MultiOutputClassifier(svm.SVC()),
+    "ogbg-molbace": MultiOutputClassifier(svm.SVC()),
+    "ogbg-molbbbp": MultiOutputClassifier(svm.SVC()),
+    "ogbg-molclintox": MultiOutputClassifier(svm.SVC()),
+    "ogbg-molmuv": MultiOutputClassifier(svm.SVC()),
+    "ogbg-molsider": MultiOutputClassifier(svm.SVC()),
+    "ogbg-moltoxcast": MultiOutputClassifier(svm.SVC()),
     # regression
-    # "ogbg-molesol": MultiOutputRegressor(svm.SVR()),
-    # "ogbg-molfreesolv": MultiOutputRegressor(svm.SVR()),
-    # "ogbg-mollipo": MultiOutputRegressor(svm.SVR()),
+    "ogbg-molesol": MultiOutputRegressor(svm.SVR()),
+    "ogbg-molfreesolv": MultiOutputRegressor(svm.SVR()),
+    "ogbg-mollipo": MultiOutputRegressor(svm.SVR()),
 }
 
 if __name__ == "__main__":
@@ -54,4 +54,6 @@ if __name__ == "__main__":
     )
 
     for dataset_name, estimator in dataset_estimator_dict.items():
-        pipeline_evaluator.evaluate(dataset_name=dataset_name, estimator=estimator)
+        pipeline_evaluator.evaluate(
+            dataset_name=dataset_name, estimator=estimator, max_elem=1000
+        )

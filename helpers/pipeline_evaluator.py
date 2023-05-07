@@ -5,21 +5,19 @@ from sklearn.impute import IterativeImputer
 
 from helpers import GraphGenerator, ResultPrinter
 from paths2vec import Paths2Vec
+import random
 
 
 def get_paths2vec_X(
     dataset_name,
-    dataset,
+    graphs,
     cpu_count,
     sample_size,
     window_in_nodes,
     vertex_feature_idx,
     edge_feature_idx,
+    split_idx,
 ):
-    # convert ogb dicts to networkx graphs
-    dict_calculator = GraphGenerator()
-    graphs = dict_calculator.ogb_dataset_to_graphs(dataset=dataset)
-
     # generate vectors for graphs
     corpus_file = f"{dataset_name}_paths.cor"
     paths2vec = Paths2Vec(cpu_count=cpu_count)
@@ -37,14 +35,15 @@ def get_paths2vec_X(
 
 def get_random_X(
     dataset_name,
-    dataset,
+    graphs,
     cpu_count,
     sample_size,
     window_in_nodes,
     vertex_feature_idx,
     edge_feature_idx,
+    split_idx,
 ):
-    X = [np.random.normal(size=100) for _ in range(len(dataset))]
+    X = [np.random.normal(size=100) for _ in range(len(graphs))]
     return X
 
 
@@ -66,12 +65,7 @@ class PipelineEvaluator:
         self.edge_feature_idx = edge_feature_idx
         pass
 
-    def get_result_dicts(
-        self,
-        X_func,
-        dataset_name,
-        estimator,
-    ):
+    def get_result_dicts(self, X_func, dataset_name, estimator, max_elem):
         result_dicts = []
 
         for i in range(self.num_runs):
@@ -79,23 +73,47 @@ class PipelineEvaluator:
 
             dataset = GraphPropPredDataset(name=dataset_name)
 
+            if max_elem == None:
+                frac = 1
+            elif len(dataset) > max_elem:
+                frac = 1 / len(dataset) * max_elem
+            else:
+                frac = 1
+
+            # get subset
+            used_new_idx = []
+            split_idx = dataset.get_idx_split()
+            for name, idx in split_idx.items():
+                random_sublist = random.sample(list(idx), int(len(idx) * frac))
+                split_idx[name] = random_sublist
+                used_new_idx.extend(random_sublist)
+            used_new_idx.sort()
+
+            # convert ogb dicts to networkx graphs
+            dict_calculator = GraphGenerator()
+            graphs = dict_calculator.ogb_dataset_to_graphs(dataset=dataset)
+
+            graphs = [graphs[i] for i in used_new_idx]
+
             X = X_func(
                 dataset_name,
-                dataset,
+                graphs,
                 self.cpu_count,
                 self.sample_size,
                 self.window_in_nodes,
                 self.vertex_feature_idx,
                 self.edge_feature_idx,
+                split_idx,
             )
 
             # split data
             data = dict()
-            for name, idx_list in dataset.get_idx_split().items():
+            for name, idx_list in split_idx.items():
                 data[name] = dict()
-                data[name]["X"] = np.array([X[idx] for idx in idx_list])
-                y = np.array([dataset[idx][1] for idx in idx_list])
-                data[name]["y"] = y
+                data[name]["X"] = np.array(
+                    [X[used_new_idx.index(idx)] for idx in idx_list]
+                )
+                data[name]["y"] = np.array([dataset[idx][1] for idx in idx_list])
 
             # fit
             imp = IterativeImputer()
@@ -117,15 +135,13 @@ class PipelineEvaluator:
 
         return result_dicts
 
-    def evaluate(self, dataset_name, estimator):
+    def evaluate(self, dataset_name, estimator, max_elem=None):
         methods = {"path2vec": get_paths2vec_X, "random": get_random_X}
 
         result_str = ""
         for methodname, method in methods.items():
             result_dicts = self.get_result_dicts(
-                method,
-                dataset_name,
-                estimator,
+                method, dataset_name, estimator, max_elem=max_elem
             )
 
             # print results
