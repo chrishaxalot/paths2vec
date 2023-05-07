@@ -1,7 +1,6 @@
 import numpy as np
 from ogb.graphproppred import Evaluator, GraphPropPredDataset
-from sklearn.experimental import enable_iterative_imputer
-from sklearn.impute import IterativeImputer
+from sklearn.impute import SimpleImputer
 
 from helpers import GraphGenerator, ResultPrinter
 from paths2vec import Paths2Vec
@@ -116,7 +115,7 @@ class PipelineEvaluator:
                 data[name]["y"] = np.array([dataset[idx][1] for idx in idx_list])
 
             # fit
-            imp = IterativeImputer()
+            imp = SimpleImputer(strategy="most_frequent")
             y = imp.fit_transform(data["train"]["y"])
             estimator.fit(data["train"]["X"], y)
             # predict
@@ -159,3 +158,5 @@ class PipelineEvaluator:
         print(result_str)
         with open("result.result", "a") as result_file:
             result_file.write(result_str)
+
+        return result_str
