@@ -11,36 +11,19 @@ num_runs = 3
 sample_size = 150
 window_in_nodes = 3
 
-# ogbg-molhiv, 41127 1 binary classification
-# ogbg-molpcba, 437929 128 binary classification
-# ogbg-moltox21, 7831 12 binary classification
-# ogbg-molbace, 1513 1 binary classification
-# ogbg-molbbbp, 2039 1 binary classification
-# ogbg-molclintox, 1477 2 binary classification
-# ogbg-molmuv, 93087 17 binary classification
-# ogbg-molsider, 1427 27 binary classification
-# ogbg-moltoxcast, 8576 617 binary classification
-# ogbg-molesol, 1128 1 regression
-# ogbg-molfreesolv, 642 1 regression
-# ogbg-mollipo, 4200 1 regression
-
 dataset_estimator_dict = {
-    # (multi-task) binary classification
-    "ogbg-moltox21": MultiOutputClassifier(svm.SVC()),
-    "ogbg-molbace": MultiOutputClassifier(svm.SVC()),
-    "ogbg-molbbbp": MultiOutputClassifier(svm.SVC()),
-    "ogbg-molclintox": MultiOutputClassifier(svm.SVC()),
-    "ogbg-molsider": MultiOutputClassifier(svm.SVC()),
-    "ogbg-moltoxcast": MultiOutputClassifier(svm.SVC()),
-    # # regression
-    "ogbg-molesol": MultiOutputRegressor(svm.SVR()),
-    "ogbg-molfreesolv": MultiOutputRegressor(svm.SVR()),
-    "ogbg-mollipo": MultiOutputRegressor(svm.SVR()),
-    #
-    # larger datasets
-    "ogbg-molhiv": MultiOutputClassifier(svm.SVC()),
-    "ogbg-molpcba": MultiOutputClassifier(svm.SVC()),
-    "ogbg-molmuv": MultiOutputClassifier(svm.SVC()),
+    "ogbg-molfreesolv": MultiOutputRegressor(svm.SVR()),  # 642
+    "ogbg-molesol": MultiOutputRegressor(svm.SVR()),  # 1128
+    "ogbg-molsider": MultiOutputClassifier(svm.SVC()),  # 1427
+    "ogbg-molbbbp": MultiOutputClassifier(svm.SVC()),  # 1477
+    "ogbg-moltox21": MultiOutputClassifier(svm.SVC()),  # 1513
+    "ogbg-molbace": MultiOutputClassifier(svm.SVC()),  # 2039
+    "ogbg-molmuv": MultiOutputClassifier(svm.SVC()),  # 7831
+    "ogbg-mollipo": MultiOutputRegressor(svm.SVR()),  # 4200
+    "ogbg-moltoxcast": MultiOutputClassifier(svm.SVC()),  # 8576
+    "ogbg-molhiv": MultiOutputClassifier(svm.SVC()),  # 41127
+    "ogbg-molclintox": MultiOutputClassifier(svm.SVC()),  # 93087
+    "ogbg-molpcba": MultiOutputClassifier(svm.SVC()),  # 437929
 }
 
 if __name__ == "__main__":
@@ -51,8 +34,8 @@ if __name__ == "__main__":
         num_runs=num_runs,
         window_in_nodes=window_in_nodes,
         sample_size=sample_size,
-        vertex_feature_idx=range(9),
-        edge_feature_idx=range(3),
+        vertex_feature_idx=range(9),  # [0],
+        edge_feature_idx=range(3),  # [0],
     )
 
     for dataset_name, estimator in dataset_estimator_dict.items():
