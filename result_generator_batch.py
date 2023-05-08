@@ -11,7 +11,7 @@ from helpers.pipeline_evaluator import PipelineEvaluator
 @click.option("--num_runs", type=int)
 @click.option("--sample_size", type=int)
 @click.option("--window_in_nodes", type=int)
-@click.option("--max_elem", default=None)
+@click.option("--max_elem", default=None, type=int)
 def main(dataset_name, task_type, num_runs, sample_size, window_in_nodes, max_elem):
     if task_type == "classification":
         estimator = MultiOutputClassifier(svm.SVC())
