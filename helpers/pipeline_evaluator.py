@@ -52,28 +52,26 @@ class PipelineEvaluator:
     def __init__(
         self,
         cpu_count,
-        num_runs,
         window_in_nodes,
         sample_size,
         vertex_feature_idx,
         edge_feature_idx,
     ):
         self.cpu_count = cpu_count
-        self.num_runs = num_runs
         self.window_in_nodes = window_in_nodes
         self.sample_size = sample_size
         self.vertex_feature_idx = vertex_feature_idx
         self.edge_feature_idx = edge_feature_idx
         pass
 
-    def get_result_dicts(self, X_func, dataset_name, max_elem):
+    def get_result_dicts(self, X_func, dataset_name, num_runs, max_elem):
         result_dicts = {}
         result_dicts["train"] = []
         result_dicts["test"] = []
         result_dicts["valid"] = []
 
-        for i in range(self.num_runs):
-            print(f"starting run {i + 1} of {self.num_runs}")
+        for i in range(num_runs):
+            print(f"starting run {i + 1} of {num_runs}")
 
             dataset = GraphPropPredDataset(name=dataset_name)
 
@@ -146,23 +144,26 @@ class PipelineEvaluator:
 
         return result_dicts
 
-    def evaluate(self, dataset_name, max_elem=None):
+    def evaluate(self, dataset_name, num_runs, max_elem=None):
         methods = {"path2vec": get_paths2vec_X, "random": get_random_X}
+
+        dataset = GraphPropPredDataset(name=dataset_name)
 
         final_dict = {}
         final_dict[dataset_name] = {}
         final_dict[dataset_name]["results"] = {}
-        final_dict[dataset_name]["runs"] = self.num_runs
+        final_dict[dataset_name]["runs"] = num_runs
         final_dict[dataset_name]["max_elem"] = max_elem
         final_dict[dataset_name]["sample_size"] = self.sample_size
         final_dict[dataset_name]["windows_size"] = self.window_in_nodes
-        metric = GraphPropPredDataset(name=dataset_name).eval_metric
+        metric = dataset.eval_metric
         final_dict[dataset_name]["metric"] = metric
 
         for methodname, method in methods.items():
             result_dict = self.get_result_dicts(
                 method,
                 dataset_name,
+                num_runs,
                 max_elem=max_elem,
             )
 
