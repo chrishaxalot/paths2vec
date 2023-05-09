@@ -38,16 +38,33 @@ class PathGenerator:
 
         i = 0
 
-        while True:
-            source = choice(range(len(list(graph.nodes))))
+        n = 250
+
+        path = []
+        source = choice(range(len(list(graph.nodes))))
+        path.append(source)
+        for _ in range(n):
             target = choice(range(len(list(graph.nodes))))
             if nx.has_path(graph, source, target):
-                path = nx.shortest_path(graph, source=source, target=target)
-                if len(path) >= 2 and path not in paths:
-                    paths.append(path)
-            i += 1
-            if i >= self.sample_size:
-                break
+                shortest_path = nx.shortest_path(graph, source=source, target=target)
+                path.extend(shortest_path[1:])
+                source = target
+
+                if len(path) >= n:
+                    break
+
+        paths.append(path)
+
+        # while True:
+        #    source = choice(range(len(list(graph.nodes))))
+        #    target = choice(range(len(list(graph.nodes))))
+        #    if nx.has_path(graph, source, target):
+        #        path = nx.shortest_path(graph, source=source, target=target)
+        #        if len(path) >= 2 and path not in paths:
+        #            paths.append(path)
+        #    i += 1
+        #    if i >= self.sample_size:
+        #        break
 
         return paths
 

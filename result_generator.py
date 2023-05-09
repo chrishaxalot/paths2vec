@@ -4,26 +4,30 @@ from sklearn.multioutput import MultiOutputClassifier, MultiOutputRegressor
 from helpers.pipeline_evaluator import PipelineEvaluator
 
 import gensim
+from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import StandardScaler
+from sklearn.svm import SVC
 
 
-cpu_count = 40
-num_runs = 3
-sample_size = 150
-window_in_nodes = 3
+cpu_count = 16
+num_runs = 1  # 10
+sample_size = 10  # 150
+window_in_nodes = 1  # 3
+
 
 dataset_estimator_dict = {
-    "ogbg-molfreesolv": MultiOutputRegressor(svm.SVR()),  # 642
-    "ogbg-molesol": MultiOutputRegressor(svm.SVR()),  # 1128
-    "ogbg-molsider": MultiOutputClassifier(svm.SVC()),  # 1427
-    "ogbg-molbbbp": MultiOutputClassifier(svm.SVC()),  # 1477
-    "ogbg-moltox21": MultiOutputClassifier(svm.SVC()),  # 1513
-    "ogbg-molbace": MultiOutputClassifier(svm.SVC()),  # 2039
-    "ogbg-molmuv": MultiOutputClassifier(svm.SVC()),  # 7831
-    "ogbg-mollipo": MultiOutputRegressor(svm.SVR()),  # 4200
-    "ogbg-moltoxcast": MultiOutputClassifier(svm.SVC()),  # 8576
-    "ogbg-molhiv": MultiOutputClassifier(svm.SVC()),  # 41127
-    "ogbg-molclintox": MultiOutputClassifier(svm.SVC()),  # 93087
-    "ogbg-molpcba": MultiOutputClassifier(svm.SVC()),  # 437929
+    "ogbg-molfreesolv": MultiOutputRegressor(svm.SVR()),  # <10_000
+    "ogbg-molesol": MultiOutputRegressor(svm.SVR()),  # <10_000
+    # "ogbg-molsider": MultiOutputClassifier(svm.SVC()),  # <10_000
+    # "ogbg-molclintox": MultiOutputClassifier(svm.SVC()),  # <10_000
+    "ogbg-molbace": MultiOutputClassifier(svm.SVC()),  # <10_000
+    "ogbg-molbbbp": MultiOutputClassifier(svm.SVC()),  # <10_000
+    "ogbg-mollipo": MultiOutputRegressor(svm.SVR()),  # <10_000
+    # "ogbg-moltox21": MultiOutputClassifier(svm.SVC()),  # <10_000
+    # "ogbg-moltoxcast": MultiOutputClassifier(svm.SVC()),  # <10_000
+    # "ogbg-molhiv": MultiOutputClassifier(svm.SVC()), # <100_000
+    # "ogbg-molmuv": MultiOutputClassifier(svm.SVC()), # <100_000
+    # "ogbg-molpcba": MultiOutputClassifier(svm.SVC()), # >=100_00
 }
 
 if __name__ == "__main__":
@@ -40,5 +44,9 @@ if __name__ == "__main__":
 
     for dataset_name, estimator in dataset_estimator_dict.items():
         pipeline_evaluator.evaluate(
-            dataset_name=dataset_name, estimator=estimator, max_elem=None
+            dataset_name=dataset_name,
+            estimator=estimator,
+            subset_name="test",
+            result_dir="results/",
+            max_elem=None,
         )

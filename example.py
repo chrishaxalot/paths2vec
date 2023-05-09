@@ -30,7 +30,7 @@ if __name__ == "__main__":
         graphs = dict_calculator.ogb_dataset_to_graphs(dataset=dataset)
 
         # generate vectors for graphs
-        corpus_file = f"{dataset_name}_paths.cor"
+        corpus_file = f"corpus_files/{dataset_name}_paths.cor"
         paths2vec = Paths2Vec(cpu_count=cpu_count)
         X = paths2vec.fit(
             graphs=graphs,

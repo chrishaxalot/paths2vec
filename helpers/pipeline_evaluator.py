@@ -19,7 +19,7 @@ def get_paths2vec_X(
     split_idx,
 ):
     # generate vectors for graphs
-    corpus_file = f"{dataset_name}_paths.cor"
+    corpus_file = f"corpus_files/{dataset_name}_paths.cor"
     paths2vec = Paths2Vec(cpu_count=cpu_count)
     X = paths2vec.fit(
         graphs=graphs,
@@ -65,7 +65,7 @@ class PipelineEvaluator:
         self.edge_feature_idx = edge_feature_idx
         pass
 
-    def get_result_dicts(self, X_func, dataset_name, estimator, max_elem):
+    def get_result_dicts(self, X_func, dataset_name, estimator, max_elem, subset_name):
         result_dicts = []
 
         for i in range(self.num_runs):
@@ -119,13 +119,13 @@ class PipelineEvaluator:
             y = imp.fit_transform(data["train"]["y"])
             estimator.fit(data["train"]["X"], y)
             # predict
-            prediction = estimator.predict(data["valid"]["X"])
-            data["valid"]["y_predicted"] = prediction
+            prediction = estimator.predict(data[subset_name]["X"])
+            data[subset_name]["y_predicted"] = prediction
             # evaluate
             evaluator = Evaluator(name=dataset_name)
             input_dict = {
-                "y_true": data["valid"]["y"],
-                "y_pred": data["valid"]["y_predicted"],
+                "y_true": data[subset_name]["y"],
+                "y_pred": data[subset_name]["y_predicted"],
             }
             result_dicts.append(evaluator.eval(input_dict))
 
@@ -134,19 +134,24 @@ class PipelineEvaluator:
 
         return result_dicts
 
-    def evaluate(self, dataset_name, estimator, max_elem=None):
+    def evaluate(self, dataset_name, estimator, subset_name, result_dir, max_elem=None):
         methods = {"path2vec": get_paths2vec_X, "random": get_random_X}
 
         result_str = ""
         for methodname, method in methods.items():
             start_time = time.time()
             result_dicts = self.get_result_dicts(
-                method, dataset_name, estimator, max_elem=max_elem
+                method,
+                dataset_name,
+                estimator,
+                subset_name=subset_name,
+                max_elem=max_elem,
             )
             end_time = time.time()
 
             # print results
             result_str += f"dataset: {dataset_name}\n"
+            result_str += f"subset: {subset_name}\n"
             result_str += f"method: {methodname}\n"
             result_str += f"runs: {self.num_runs}\n"
             result_str += f"s/run: {(end_time-start_time)/self.num_runs}\n"
@@ -156,7 +161,7 @@ class PipelineEvaluator:
             result_str += "\n"
 
         print(result_str)
-        with open(f"result_{dataset_name}.result", "w") as result_file:
+        with open(f"{result_dir}{dataset_name}_{subset_name}.txt", "w") as result_file:
             result_file.write(result_str)
 
         return result_str
