@@ -80,7 +80,9 @@ class PipelineEvaluator:
                     StandardScaler(), MultiOutputClassifier(SVC())
                 )
             elif dataset.task_type == "regression":
-                estimator = make_pipeline(StandardScaler(), MultiOutputRegressor(SVR()))
+                estimator = make_pipeline(
+                    StandardScaler(), MultiOutputRegressor(SVR(kernel="linear"))
+                )
 
             if max_elem == None:
                 frac = 1
