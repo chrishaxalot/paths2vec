@@ -2,22 +2,22 @@ import json
 
 from helpers.pipeline_evaluator import PipelineEvaluator
 
-cpu_count = 16
+cpu_count = 40
 num_runs = 10
 sample_size = 150
 window_in_nodes = 3
 
 
 datasets_runs = {
-    "ogbg-molfreesolv": 10,
-    "ogbg-molesol": 10,
-    # "ogbg-molsider",
-    # "ogbg-molclintox",
-    "ogbg-molbace": 10,
-    "ogbg-molbbbp": 10,
-    "ogbg-mollipo": 10,
-    # "ogbg-moltox21",
-    # "ogbg-moltoxcast",
+    ##"ogbg-molfreesolv": 10,
+    ##"ogbg-molesol": 10,
+    "ogbg-molsider": 10,
+    "ogbg-molclintox": 10,
+    ##"ogbg-molbace": 10,
+    ##"ogbg-molbbbp": 10,
+    ##"ogbg-mollipo": 10,
+    "ogbg-moltox21": 10,
+    "ogbg-moltoxcast": 10,
     # "ogbg-molhiv",
     # "ogbg-molmuv",
     # "ogbg-molpcba"
