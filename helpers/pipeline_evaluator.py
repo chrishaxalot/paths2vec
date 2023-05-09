@@ -2,10 +2,13 @@ import numpy as np
 from ogb.graphproppred import Evaluator, GraphPropPredDataset
 from sklearn.impute import SimpleImputer
 
-from helpers import GraphGenerator, ResultPrinter
+from helpers import GraphGenerator
 from paths2vec import Paths2Vec
 import random
-import time
+from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import StandardScaler
+from sklearn.svm import SVC, SVR
+from sklearn.multioutput import MultiOutputClassifier, MultiOutputRegressor
 
 
 def get_paths2vec_X(
@@ -16,7 +19,6 @@ def get_paths2vec_X(
     window_in_nodes,
     vertex_feature_idx,
     edge_feature_idx,
-    split_idx,
 ):
     # generate vectors for graphs
     corpus_file = f"corpus_files/{dataset_name}_paths.cor"
@@ -41,7 +43,6 @@ def get_random_X(
     window_in_nodes,
     vertex_feature_idx,
     edge_feature_idx,
-    split_idx,
 ):
     X = [np.random.normal(size=100) for _ in range(len(graphs))]
     return X
@@ -65,13 +66,23 @@ class PipelineEvaluator:
         self.edge_feature_idx = edge_feature_idx
         pass
 
-    def get_result_dicts(self, X_func, dataset_name, estimator, max_elem, subset_name):
-        result_dicts = []
+    def get_result_dicts(self, X_func, dataset_name, max_elem):
+        result_dicts = {}
+        result_dicts["train"] = []
+        result_dicts["test"] = []
+        result_dicts["valid"] = []
 
         for i in range(self.num_runs):
             print(f"starting run {i + 1} of {self.num_runs}")
 
             dataset = GraphPropPredDataset(name=dataset_name)
+
+            if dataset.task_type == "binary classification":
+                estimator = make_pipeline(
+                    StandardScaler(), MultiOutputClassifier(SVC())
+                )
+            elif dataset.task_type == "regression":
+                estimator = make_pipeline(StandardScaler(), MultiOutputRegressor(SVR()))
 
             if max_elem == None:
                 frac = 1
@@ -102,7 +113,6 @@ class PipelineEvaluator:
                 self.window_in_nodes,
                 self.vertex_feature_idx,
                 self.edge_feature_idx,
-                split_idx,
             )
 
             # split data
@@ -118,50 +128,52 @@ class PipelineEvaluator:
             imp = SimpleImputer(strategy="most_frequent")
             y = imp.fit_transform(data["train"]["y"])
             estimator.fit(data["train"]["X"], y)
-            # predict
-            prediction = estimator.predict(data[subset_name]["X"])
-            data[subset_name]["y_predicted"] = prediction
-            # evaluate
-            evaluator = Evaluator(name=dataset_name)
-            input_dict = {
-                "y_true": data[subset_name]["y"],
-                "y_pred": data[subset_name]["y_predicted"],
-            }
-            result_dicts.append(evaluator.eval(input_dict))
+
+            for subset_name in ["train", "test", "valid"]:
+                # predict
+                prediction = estimator.predict(data[subset_name]["X"])
+                data[subset_name]["y_predicted"] = prediction
+                # evaluate
+                evaluator = Evaluator(name=dataset_name)
+                input_dict = {
+                    "y_true": data[subset_name]["y"],
+                    "y_pred": data[subset_name]["y_predicted"],
+                }
+                result_dicts[subset_name].append(evaluator.eval(input_dict))
 
             # newline for space in log file
             print()
 
         return result_dicts
 
-    def evaluate(self, dataset_name, estimator, subset_name, result_dir, max_elem=None):
+    def evaluate(self, dataset_name, max_elem=None):
         methods = {"path2vec": get_paths2vec_X, "random": get_random_X}
 
-        result_str = ""
+        final_dict = {}
+        final_dict[dataset_name] = {}
+        final_dict[dataset_name]["results"] = {}
+        final_dict[dataset_name]["runs"] = self.num_runs
+        final_dict[dataset_name]["max_elem"] = max_elem
+        final_dict[dataset_name]["sample_size"] = self.sample_size
+        final_dict[dataset_name]["windows_size"] = self.window_in_nodes
+        metric = GraphPropPredDataset(name=dataset_name).eval_metric
+        final_dict[dataset_name]["metric"] = metric
+
         for methodname, method in methods.items():
-            start_time = time.time()
-            result_dicts = self.get_result_dicts(
+            result_dict = self.get_result_dicts(
                 method,
                 dataset_name,
-                estimator,
-                subset_name=subset_name,
                 max_elem=max_elem,
             )
-            end_time = time.time()
 
             # print results
-            result_str += f"dataset: {dataset_name}\n"
-            result_str += f"subset: {subset_name}\n"
-            result_str += f"method: {methodname}\n"
-            result_str += f"runs: {self.num_runs}\n"
-            result_str += f"s/run: {(end_time-start_time)/self.num_runs}\n"
-            result_str += f"max_elem: {max_elem}\n"
-            result_printer = ResultPrinter()
-            result_str += result_printer.print(result_dicts=result_dicts)
-            result_str += "\n"
 
-        print(result_str)
-        with open(f"{result_dir}{dataset_name}_{subset_name}.txt", "w") as result_file:
-            result_file.write(result_str)
+            final_dict[dataset_name]["results"][methodname] = {}
+            for result_dict_subset, dict_list in result_dict.items():
+                results = [list(x.values())[0] for x in dict_list]
 
-        return result_str
+                final_dict[dataset_name]["results"][methodname][
+                    result_dict_subset
+                ] = results
+
+        return final_dict

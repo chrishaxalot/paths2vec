@@ -29,7 +29,6 @@ def main(dataset_name, task_type, num_runs, sample_size, window_in_nodes, max_el
 
     pipeline_evaluator.evaluate(
         dataset_name=dataset_name,
-        estimator=estimator,
         evaluate="test",
         max_elem=max_elem,
     )
